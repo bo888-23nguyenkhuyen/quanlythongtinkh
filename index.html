@@ -48,7 +48,7 @@
                 <form @submit.prevent="checkLogin" class="w-full max-w-sm space-y-6 text-slate-900 leading-normal">
                     <div class="relative leading-normal">
                         <i data-lucide="lock" class="absolute left-5 top-1/2 -translate-y-1/2 text-red-800 w-6 h-6 font-black leading-normal"></i>
-                        <input v-model="loginPassword" type="password" inputmode="numeric" placeholder="Mật khẩu truy cập" class="w-full pl-14 pr-6 py-5 rounded-3xl bg-white text-slate-900 text-xl font-black focus:ring-4 focus:ring-red-400 focus:outline-none transition-all placeholder:text-slate-300 leading-normal">
+                        <input v-model="loginPassword" type="password" inputmode="numeric" placeholder="Nhập mã truy cập..." class="w-full pl-14 pr-6 py-5 rounded-3xl bg-white text-slate-900 text-xl font-black focus:ring-4 focus:ring-red-400 focus:outline-none transition-all placeholder:text-slate-300 leading-normal">
                     </div>
                     <button type="submit" class="w-full py-5 bg-slate-900 text-white rounded-3xl font-black text-lg uppercase tracking-[0.2em] shadow-2xl hover:bg-black transition-all active:scale-95 leading-normal">
                         Vào hệ thống
@@ -561,7 +561,7 @@
     <!-- Firebase System -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, disableNetwork, enableNetwork } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, getDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, disableNetwork, enableNetwork } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
@@ -583,7 +583,6 @@
         });
 
         const appId = 'crm-bo-888-v2';
-        const MASTER_PASSWORD = '8888';
         const CYCLE_DAYS = 30;
 
         const gmt7Formatter = new Intl.DateTimeFormat('en-US', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: 'numeric', day: 'numeric' });
@@ -744,14 +743,30 @@
                     } catch(e) { console.error(e); }
                 };
 
-                const checkLogin = () => {
-                    if (loginPassword.value === MASTER_PASSWORD) {
-                        isAuthorized.value = true; 
-                        sessionStorage.setItem('bo888_auth', 'true'); 
-                        nextTick(() => lucide.createIcons());
-                    } else {
-                        loginError.value = true; 
+                const checkLogin = async () => {
+                    if (!loginPassword.value) return;
+                    
+                    loading.value = true;
+                    try {
+                        // Tìm trên Database xem có tài liệu nào tên bằng mật khẩu vừa nhập không
+                        const docRef = doc(db, 'system_configs', loginPassword.value);
+                        const docSnap = await getDoc(docRef);
+
+                        if (docSnap.exists()) {
+                            isAuthorized.value = true; 
+                            sessionStorage.setItem('bo888_auth', 'true'); 
+                            loginError.value = false;
+                            nextTick(() => lucide.createIcons());
+                        } else {
+                            loginError.value = true; 
+                            loginPassword.value = '';
+                        }
+                    } catch (error) {
+                        console.error("Lỗi xác thực:", error);
+                        loginError.value = true;
                         loginPassword.value = '';
+                    } finally {
+                        loading.value = false;
                     }
                 };
 
