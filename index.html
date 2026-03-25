@@ -940,7 +940,7 @@
                 const confirmDelete = () => {
                     if(!deleteConfirmation.value) return;
                     deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', deleteConfirmation.value.id)).catch(()=>{});
-                    deleteConfirmation.value = null; notify("Đã xóa khỏi Cloud!", "error");
+                    deleteConfirmation.value = null; notify("Vui lòng liên hệ admin!", "error");
                 };
 
                 const handleTransaction = () => {
