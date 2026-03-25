@@ -90,6 +90,10 @@
                     <button @click="openAddTab()" :class="activeTab === 'add' ? 'bg-white text-red-800 shadow-xl scale-105' : 'hover:bg-red-700/50 text-white'" class="w-full flex items-center gap-3 p-4 rounded-2xl transition-all font-bold text-left leading-normal">
                         <i data-lucide="user-plus" class="w-5 h-5 font-black shrink-0 leading-normal"></i> Thêm khách mới
                     </button>
+                    <!-- QUẢN LÝ Ý KIẾN -->
+                    <button @click="activeTab = 'feedbacks_all'" :class="activeTab === 'feedbacks_all' ? 'bg-white text-red-800 shadow-xl scale-105' : 'hover:bg-red-700/50 text-white'" class="w-full flex items-center gap-3 p-4 rounded-2xl transition-all font-bold text-left leading-normal">
+                        <i data-lucide="message-square-more" class="w-5 h-5 font-black shrink-0 leading-normal"></i> Quản lý ý kiến
+                    </button>
                 </nav>
 
                 <div class="mt-auto pt-6 space-y-3 leading-normal">
@@ -109,7 +113,7 @@
             </aside>
 
             <!-- Main Content -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 relative min-w-0 leading-normal">
+            <main class="flex-1 overflow-y-auto p-4 md:p-8 lg:p-12 relative min-w-0 leading-normal text-slate-900">
                 <!-- Notification -->
                 <transition name="fade">
                     <div v-if="notification" class="fixed top-6 right-6 z-[200] p-4 rounded-2xl shadow-2xl flex items-center gap-4 bg-slate-900 text-white border-l-8 leading-normal" :class="notification.type === 'success' ? 'border-emerald-500' : 'border-red-500'">
@@ -175,7 +179,6 @@
                                         <i data-lucide="timer" class="w-3.5 h-3.5 shrink-0 font-black leading-normal"></i>
                                         <span class="leading-normal">Chu kỳ tích điểm còn {{ getDaysRemaining(member.lastResetDate) }} ngày</span>
                                     </div>
-                                    <!-- TRƯỜNG: ĐẾM SỐ LẦN GHÉ QUÁN -->
                                     <div class="flex items-center gap-2 px-3 py-2.5 rounded-xl text-[10px] md:text-[11px] font-black uppercase tracking-tight min-w-0 vietnamese-fix bg-purple-50 text-purple-700 leading-normal">
                                         <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0 font-black leading-normal"></i>
                                         <span class="leading-normal">Đã ghé: {{ getVisitsThisCycle(member) }} lần trong chu kỳ</span>
@@ -197,12 +200,11 @@
                                     <i data-lucide="plus-circle" class="w-5 h-5 font-black shrink-0 leading-normal"></i> Tích điểm hóa đơn
                                 </button>
                                 
-                                <!-- NÚT Ý KIẾN KHÁCH HÀNG (DẠNG THẺ) -->
                                 <button @click="openFeedback(member)" class="w-full mb-6 py-3 bg-purple-100 text-purple-700 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-2 hover:bg-purple-200 transition-all shadow-sm active:scale-95 shrink-0 leading-normal">
                                     <i data-lucide="message-square" class="w-4 h-4 font-black shrink-0 leading-normal"></i> Ý kiến khách hàng ({{ (member.feedbacks || []).length }})
                                 </button>
 
-                                <div class="flex justify-between items-center pt-6 border-t border-slate-100 mt-auto gap-2 min-w-0 leading-normal">
+                                <div class="flex justify-between items-center pt-6 border-t border-slate-100 mt-auto gap-2 min-w-0 leading-normal text-slate-900">
                                     <button @click="showDetail(member)" class="flex items-center gap-1.5 text-[10px] md:text-xs font-black text-slate-500 hover:text-red-800 transition uppercase tracking-widest min-w-0 leading-normal">
                                         <i data-lucide="history" class="w-4 h-4 shrink-0 font-black leading-normal"></i> <span class="truncate">Lịch sử</span>
                                     </button>
@@ -245,14 +247,13 @@
                                         <td><p class="text-red-700 font-black leading-normal whitespace-nowrap leading-normal">{{ formatCurrency(member.points) }}đ</p></td>
                                         <td><p class="text-slate-800 font-black leading-normal whitespace-nowrap leading-normal">{{ formatSpending(member.spendingLast30Days) }}</p></td>
                                         <td>
-                                            <div class="flex items-center gap-1.5 min-w-0 leading-normal">
+                                            <div class="flex items-center gap-1.5 min-w-0 leading-normal text-slate-900">
                                                 <div :class="getDaysSinceLastVisit(member.lastVisitDate) > 30 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'" class="w-1.5 h-1.5 rounded-full shrink-0 shadow-sm leading-normal"></div>
                                                 <span class="text-xs font-bold text-slate-600 truncate leading-normal">{{ getDaysSinceLastVisit(member.lastVisitDate) === 0 ? 'Hôm nay' : `${getDaysSinceLastVisit(member.lastVisitDate)} ngày trước` }}</span>
                                             </div>
                                         </td>
                                         <td class="text-right px-6 py-4 leading-normal">
                                             <div class="flex items-center justify-end gap-1.5 md:gap-2 leading-normal">
-                                                <!-- NÚT Ý KIẾN KHÁCH HÀNG (DẠNG BẢNG) -->
                                                 <button @click="openFeedback(member)" class="px-3 py-2 bg-purple-100 text-purple-700 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-200 transition-all shadow-sm shrink-0 leading-normal flex items-center gap-1.5">
                                                     <i data-lucide="message-square" class="w-3.5 h-3.5 font-black leading-normal"></i> Ý kiến ({{ (member.feedbacks || []).length }})
                                                 </button>
@@ -268,9 +269,8 @@
                         </div>
                     </template>
 
-                    <!-- GỢI Ý THÊM THÀNH VIÊN -->
                     <div v-else-if="searchTerm" class="bg-white p-8 md:p-12 rounded-[3.5rem] shadow-xl border-4 border-dashed border-slate-100 text-center space-y-6 animate-in zoom-in-95 mx-4 md:mx-0 leading-normal text-slate-900">
-                        <div class="w-20 md:w-24 h-20 md:h-24 bg-red-50 text-red-800 rounded-[2.5rem] flex items-center justify-center mx-auto rotate-3 shadow-inner shrink-0 text-red-800 leading-normal">
+                        <div class="w-20 md:w-24 h-20 md:h-24 bg-red-50 text-red-800 rounded-[2.5rem] flex items-center justify-center mx-auto rotate-3 shadow-inner shrink-0 text-red-800 leading-normal text-red-800">
                             <i data-lucide="user-plus" class="w-10 md:w-12 h-10 md:h-12 font-black leading-normal"></i>
                         </div>
                         <div class="space-y-2 leading-normal">
@@ -297,7 +297,7 @@
                         </button>
                     </div>
 
-                    <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-8 leading-normal">
+                    <div class="bg-white p-8 md:p-10 rounded-[3rem] shadow-sm border border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-8 leading-normal text-slate-900">
                         <div class="md:col-span-4 space-y-3 min-w-0 leading-normal">
                             <label class="block text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1 leading-normal">Hạng thành viên</label>
                             <div class="flex flex-wrap gap-2 text-white leading-normal">
@@ -339,7 +339,7 @@
                                 <thead><tr><th class="px-6 py-4 leading-normal text-slate-900">Khách hàng</th><th class="leading-normal text-slate-900">Hạng</th><th class="leading-normal text-slate-900">Ví Điểm</th><th class="leading-normal text-slate-900">Vắng mặt</th><th class="leading-normal text-slate-900">Ghé cuối</th><th class="text-right px-6 py-4 text-slate-400 leading-normal">Xem</th></tr></thead>
                                 <tbody>
                                     <tr v-for="member in advancedFilteredMembers" :key="member.id" class="leading-normal text-slate-900">
-                                        <td class="px-6 min-w-0 leading-normal">
+                                        <td class="px-6 min-w-0 leading-normal text-slate-900">
                                             <div class="flex items-center gap-3 leading-normal text-slate-900">
                                                 <div class="w-10 h-10 bg-red-50 text-red-800 rounded-xl flex items-center justify-center font-black shrink-0 uppercase shadow-inner leading-normal">{{ member.name?.charAt(0) }}</div>
                                                 <div class="min-w-0 flex-1 leading-normal text-slate-900">
@@ -364,8 +364,8 @@
                 </div>
 
                 <!-- Tab: Đăng ký / Sửa -->
-                <div v-if="activeTab === 'add'" class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-bottom-10 leading-normal">
-                    <div class="w-20 h-20 bg-red-100 text-red-800 rounded-[2rem] flex items-center justify-center mb-8 mx-auto shadow-inner rotate-3 shrink-0 leading-normal text-red-800">
+                <div v-if="activeTab === 'add'" class="max-w-xl mx-auto bg-white p-8 md:p-12 rounded-[3.5rem] shadow-sm border border-slate-100 animate-in slide-in-from-bottom-10 leading-normal text-slate-900">
+                    <div class="w-20 h-20 bg-red-100 text-red-800 rounded-[2rem] flex items-center justify-center mb-8 mx-auto shadow-inner rotate-3 shrink-0 leading-normal text-red-800 text-red-800">
                         <i data-lucide="user-plus" class="w-10 h-10 font-black leading-normal"></i>
                     </div>
                     <h2 class="text-2xl md:text-3xl font-black mb-10 text-center text-slate-800 uppercase tracking-tighter leading-normal break-words leading-normal">{{ editingMember ? 'Sửa thông tin khách' : 'Đăng ký khách mới' }}</h2>
@@ -384,18 +384,67 @@
                         </div>
                     </form>
                 </div>
+
+                <!-- Tab: QUẢN LÝ Ý KIẾN TẬP TRUNG -->
+                <div v-if="activeTab === 'feedbacks_all'" class="space-y-8 animate-in fade-in duration-500 leading-normal text-slate-900 text-left">
+                    <div class="min-w-0 leading-normal">
+                        <h2 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tighter uppercase leading-normal break-words">Quản lý <span class="text-purple-600">Ý kiến khách hàng</span></h2>
+                        <p class="text-slate-500 font-bold mt-2 flex items-center gap-2 text-sm leading-normal">
+                            <i data-lucide="message-square" class="w-4 h-4 text-purple-600 shrink-0 font-black leading-normal"></i> Hệ thống ghi nhận {{ allFeedbacks.length }} góp ý
+                        </p>
+                    </div>
+
+                    <div class="space-y-6 leading-normal text-slate-900">
+                        <div v-if="allFeedbacks.length > 0" class="grid grid-cols-1 gap-6 pb-20">
+                            <div v-for="(fb, idx) in allFeedbacks" :key="fb.memberId + '-' + fb.fbIndex" class="bg-white p-6 md:p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-6">
+                                <div class="md:w-1/4 shrink-0 space-y-2">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-purple-100 text-purple-700 rounded-xl flex items-center justify-center font-black uppercase text-purple-700">{{ fb.memberName?.charAt(0) }}</div>
+                                        <div class="min-w-0">
+                                            <p class="font-black text-slate-800 uppercase text-sm truncate leading-normal">{{ fb.memberName }}</p>
+                                            <p class="text-[10px] text-slate-400 font-black tracking-widest uppercase leading-normal">{{ fb.memberPhone }}</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase pt-2 leading-normal">{{ formatDateShort(fb.date) }}</p>
+                                </div>
+                                <div class="flex-1 space-y-4">
+                                    <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 relative text-slate-900">
+                                        <i data-lucide="quote" class="absolute -top-3 -left-1 text-slate-200 w-8 h-8 rotate-12"></i>
+                                        <p class="text-slate-700 font-bold text-sm leading-relaxed whitespace-pre-wrap relative z-10">{{ fb.content }}</p>
+                                    </div>
+                                    <!-- HIỂN THỊ LOG PHƯƠNG ÁN XỬ LÝ -->
+                                    <div v-if="fb.resolution" class="bg-purple-50/50 p-5 rounded-2xl border border-purple-100/50 text-slate-900">
+                                        <p class="text-[9px] font-black uppercase text-purple-600 mb-2 tracking-widest leading-normal">Nhật ký xử lý ý kiến</p>
+                                        <p class="text-slate-600 font-semibold text-xs whitespace-pre-wrap leading-relaxed italic">{{ fb.resolution }}</p>
+                                    </div>
+
+                                    <div class="space-y-2 text-slate-900">
+                                        <label class="block text-[9px] font-black uppercase text-purple-500 ml-1 tracking-widest leading-normal">Ghi chú phương án xử lý mới</label>
+                                        <div class="flex flex-col sm:flex-row gap-2">
+                                            <input v-model="fb.newNoteInput" placeholder="VD: Gọi điện xin lỗi, tặng voucher, đã giải thích..." class="flex-1 px-4 py-3 bg-white border-2 border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-purple-500 transition-all text-slate-900">
+                                            <button @click="saveResolution(fb)" class="px-6 py-3 bg-purple-600 text-white rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-purple-700 transition-all shadow-md active:scale-95 shrink-0">Lưu xử lý</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="text-center py-20 bg-white rounded-[3rem] border-4 border-dashed border-slate-100">
+                            <p class="text-slate-400 font-black uppercase tracking-widest text-[10px] leading-normal">Chưa có ý kiến nào được ghi nhận</p>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
 
-        <!-- OVERLAY MODALS (Transaction, Detail, Delete, Feedback) -->
+        <!-- OVERLAY MODALS -->
         <transition name="fade">
-            <div v-if="showDetailModal || deleteConfirmation || selectedMember || feedbackMember" class="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl leading-normal">
+            <div v-if="showDetailModal || deleteConfirmation || selectedMember || feedbackMember" class="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-xl leading-normal text-slate-900">
                 
-                <!-- Modal: Ý kiến khách hàng -->
+                <!-- Modal: Ý kiến khách hàng (Chi tiết từng khách) -->
                 <div v-if="feedbackMember" class="bg-white w-full max-w-2xl rounded-[3.5rem] shadow-2xl p-6 md:p-10 animate-in zoom-in-95 overflow-hidden relative max-h-[95vh] flex flex-col text-slate-900 leading-normal text-center">
                     <div class="flex justify-between items-start mb-6 gap-4 min-w-0 leading-normal">
                         <div class="flex items-center gap-4 min-w-0 flex-1 leading-normal text-slate-900 text-left">
-                            <div class="w-12 md:w-14 h-12 md:h-14 bg-purple-100 text-purple-700 rounded-2xl flex items-center justify-center shadow-lg rotate-2 shrink-0 leading-normal">
+                            <div class="w-12 md:w-14 h-12 md:h-14 bg-purple-100 text-purple-700 rounded-2xl flex items-center justify-center shadow-lg rotate-2 shrink-0 leading-normal text-purple-700">
                                 <i data-lucide="message-square" class="w-6 md:w-7 h-6 md:h-7 font-black leading-normal"></i>
                             </div>
                             <div class="min-w-0 leading-normal">
@@ -403,7 +452,7 @@
                                 <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em] truncate mt-1 leading-normal">{{ feedbackMember?.phone }}</p>
                             </div>
                         </div>
-                        <button @click="feedbackMember = null" class="p-3 bg-slate-100 rounded-full text-slate-400 hover:text-red-800 transition-colors shrink-0 leading-normal leading-normal"><i data-lucide="x" class="w-5 h-5 font-black leading-normal"></i></button>
+                        <button @click="feedbackMember = null" class="p-3 bg-slate-100 rounded-full text-slate-400 hover:text-red-800 transition-colors shrink-0 leading-normal"><i data-lucide="x" class="w-5 h-5 font-black leading-normal"></i></button>
                     </div>
                     
                     <form @submit.prevent="submitFeedback" class="mb-8 leading-normal text-left">
@@ -419,8 +468,12 @@
                         <div class="flex-1 bg-slate-50 rounded-[2rem] p-4 md:p-6 overflow-y-auto space-y-4 shadow-inner scrollbar-hide leading-normal">
                             <div v-if="sortedFeedbacks.length === 0" class="text-center text-slate-400 font-bold text-sm py-10 italic">Khách hàng chưa có ý kiến đóng góp nào.</div>
                             <div v-for="(fb, idx) in sortedFeedbacks" :key="idx" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-100 leading-normal">
-                                <p class="text-[9px] font-black uppercase text-purple-500 mb-2 tracking-widest">{{ formatDateShort(fb.date) }}</p>
-                                <p class="text-slate-700 font-bold text-sm leading-relaxed whitespace-pre-wrap">{{ fb.content }}</p>
+                                <p class="text-[9px] font-black uppercase text-purple-500 mb-2 tracking-widest leading-normal">{{ formatDateShort(fb.date) }}</p>
+                                <p class="text-slate-700 font-bold text-sm leading-relaxed whitespace-pre-wrap leading-normal">{{ fb.content }}</p>
+                                <div v-if="fb.resolution" class="mt-4 pt-4 border-t border-slate-100">
+                                    <p class="text-[9px] font-black uppercase text-emerald-600 mb-1 leading-normal">Nhật ký xử lý:</p>
+                                    <p class="text-slate-600 italic text-xs font-medium whitespace-pre-wrap leading-relaxed">{{ fb.resolution }}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -430,7 +483,7 @@
                 <div v-if="selectedMember" class="bg-white w-full max-w-xl rounded-[3rem] md:rounded-[3.5rem] shadow-2xl p-6 md:p-10 animate-in zoom-in-95 overflow-hidden relative max-h-[95vh] overflow-y-auto scrollbar-hide text-slate-900 leading-normal">
                     <div class="flex justify-between items-start mb-8 gap-4 min-w-0 leading-normal">
                         <div class="flex items-center gap-4 min-w-0 flex-1 leading-normal text-slate-900">
-                            <div class="w-12 md:w-14 h-12 md:h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center shadow-lg rotate-2 shrink-0 leading-normal">
+                            <div class="w-12 md:w-14 h-12 md:h-14 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center shadow-lg rotate-2 shrink-0 leading-normal text-emerald-700">
                                 <i data-lucide="credit-card" class="w-6 md:w-7 h-6 md:h-7 font-black leading-normal"></i>
                             </div>
                             <div class="min-w-0 text-left leading-normal">
@@ -438,20 +491,17 @@
                                 <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.1em] truncate mt-1 leading-normal">{{ selectedMember?.phone }} • {{ getTierConfigById(selectedMember?.tier || 'NEW').name }}</p>
                             </div>
                         </div>
-                        <button @click="selectedMember = null" class="p-3 bg-slate-100 rounded-full text-slate-400 hover:text-red-800 transition-colors shrink-0 leading-normal leading-normal"><i data-lucide="x" class="w-5 h-5 font-black leading-normal"></i></button>
+                        <button @click="selectedMember = null" class="p-3 bg-slate-100 rounded-full text-slate-400 hover:text-red-800 transition-colors shrink-0 leading-normal"><i data-lucide="x" class="w-5 h-5 font-black leading-normal"></i></button>
                     </div>
                     
                     <form @submit.prevent="handleTransaction" class="space-y-6 md:space-y-8 leading-normal">
                         <div class="p-6 md:p-8 bg-slate-900 rounded-[2.5rem] space-y-6 md:space-y-8 text-white shadow-2xl relative overflow-hidden border-4 border-slate-800 leading-normal text-center">
-                            
-                            <!-- TRƯỜNG THÊM: SỐ HÓA ĐƠN -->
                             <div class="flex justify-between items-center border-b border-white/10 pb-6 relative z-10 gap-4 min-w-0 leading-normal">
                                 <span class="font-black uppercase text-[10px] tracking-[0.3em] text-slate-400 shrink-0 leading-normal">Số Hóa Đơn</span>
                                 <div class="relative flex items-center min-w-0 flex-1 justify-end leading-normal text-white">
                                     <input v-model="invoiceNumber" type="text" class="text-right text-xl md:text-2xl font-black bg-transparent border-b-2 border-slate-600 focus:border-emerald-500 w-full md:w-64 focus:outline-none pr-3 text-white placeholder:text-slate-600 min-w-0 leading-normal transition-colors" placeholder="VD: HD123 (Tùy chọn)">
                                 </div>
                             </div>
-
                             <div class="flex justify-between items-center border-b border-white/10 pb-6 relative z-10 gap-4 min-w-0 leading-normal">
                                 <span class="font-black uppercase text-[10px] tracking-[0.3em] text-slate-400 shrink-0 leading-normal">Tiền Hóa Đơn</span>
                                 <div class="relative flex items-center min-w-0 flex-1 justify-end leading-normal text-white">
@@ -459,7 +509,6 @@
                                     <span class="text-[10px] font-black text-red-600 uppercase tracking-widest shrink-0 ml-1 leading-normal">vnđ</span>
                                 </div>
                             </div>
-
                             <div class="flex justify-between items-center py-2 relative z-10 gap-4 text-white min-w-0 leading-normal">
                                 <div class="flex items-center gap-3 md:gap-4 min-w-0 leading-normal text-white">
                                     <input type="checkbox" id="usePoints" v-model="usePoints" class="peer hidden" :disabled="!(selectedMember?.points > 0)">
@@ -468,7 +517,7 @@
                                     </label>
                                     <label for="usePoints" class="text-[11px] md:text-sm font-black text-slate-300 cursor-pointer select-none uppercase tracking-tighter truncate leading-normal text-left leading-normal">Dùng điểm ví ({{ formatCurrency(selectedMember?.points) }}đ)</label>
                                 </div>
-                                <span v-if="usePoints" class="text-red-400 font-black text-lg md:text-xl shrink-0 leading-normal leading-normal">-{{ formatCurrency(Math.min(selectedMember?.points || 0, billAmount || 0)) }}đ</span>
+                                <span v-if="usePoints" class="text-red-400 font-black text-lg md:text-xl shrink-0 leading-normal">-{{ formatCurrency(Math.min(selectedMember?.points || 0, billAmount || 0)) }}đ</span>
                             </div>
                             <div class="flex justify-between items-center pt-6 border-t border-white/10 relative z-10 gap-4 min-w-0 leading-normal">
                                 <span class="text-slate-500 font-black uppercase text-[10px] tracking-[0.4em] shrink-0 leading-normal">Thực thu</span>
@@ -483,12 +532,12 @@
                 <div v-if="showDetailModal" class="bg-white w-full max-w-5xl max-h-[90vh] rounded-[3.5rem] shadow-2xl overflow-hidden flex flex-col border border-white/20 animate-in zoom-in-95 text-slate-900 leading-normal text-center">
                     <div class="p-6 md:p-10 border-b border-slate-100 flex justify-between items-center bg-slate-50/30 gap-4 leading-normal">
                         <div class="flex items-center gap-4 md:gap-6 min-w-0 flex-1 leading-normal text-slate-900">
-                            <div class="w-16 md:w-20 h-16 md:h-20 bg-red-800 text-white rounded-[2rem] flex items-center justify-center font-black text-2xl md:text-3xl shadow-2xl shadow-red-200 rotate-6 shrink-0 shadow-inner leading-normal leading-normal">{{ showDetailModal?.name?.charAt(0) }}</div>
+                            <div class="w-16 md:w-20 h-16 md:h-20 bg-red-800 text-white rounded-[2rem] flex items-center justify-center font-black text-2xl md:text-3xl shadow-2xl shadow-red-200 rotate-6 shrink-0 shadow-inner leading-normal">{{ showDetailModal?.name?.charAt(0) }}</div>
                             <div class="min-w-0 flex-1 leading-normal text-left">
-                                <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-2 uppercase truncate leading-normal text-slate-900 leading-normal" :title="showDetailModal?.name">{{ showDetailModal?.name }}</h2>
-                                <div class="flex items-center gap-3 min-w-0 leading-normal leading-normal">
-                                    <span :class="getTierConfigById(showDetailModal?.tier || 'NEW').color" class="px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 whitespace-nowrap leading-normal leading-normal">{{ getTierConfigById(showDetailModal?.tier || 'NEW').name }}</span>
-                                    <p class="text-xs md:text-sm text-slate-500 font-black tracking-widest truncate uppercase leading-normal leading-normal">{{ showDetailModal?.phone }}</p>
+                                <h2 class="text-2xl md:text-3xl font-black uppercase tracking-tighter mb-2 uppercase truncate leading-normal text-slate-900" :title="showDetailModal?.name">{{ showDetailModal?.name }}</h2>
+                                <div class="flex items-center gap-3 min-w-0 leading-normal text-slate-900">
+                                    <span :class="getTierConfigById(showDetailModal?.tier || 'NEW').color" class="px-3 py-1 rounded-xl text-[10px] font-black uppercase tracking-widest shrink-0 whitespace-nowrap leading-normal">{{ getTierConfigById(showDetailModal?.tier || 'NEW').name }}</span>
+                                    <p class="text-xs md:text-sm text-slate-500 font-black tracking-widest truncate uppercase leading-normal">{{ showDetailModal?.phone }}</p>
                                 </div>
                             </div>
                         </div>
@@ -501,7 +550,7 @@
                                 <form @submit.prevent="handleAdjustPoints" class="space-y-4 leading-normal">
                                     <div>
                                         <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 leading-normal">Cộng / Trừ Điểm lẻ (VNĐ)</label>
-                                        <input v-model.number="adjustPointsValue" type="number" placeholder="Vd: 50000 hoặc -20000" required class="w-full px-5 py-4 rounded-3xl border-2 border-slate-100 focus:border-red-800 focus:bg-white text-slate-900 font-black text-lg outline-none transition-all shadow-sm min-w-0 leading-normal">
+                                        <input v-model.number="adjustPointsValue" type="number" placeholder="Vd: 50000 hoặc -20000" required class="w-full px-5 py-4 rounded-3xl border-2 border-slate-100 focus:border-red-800 focus:bg-white text-slate-900 font-black text-lg outline-none transition-all shadow-sm min-w-0 leading-normal text-slate-900">
                                     </div>
                                     <textarea v-model="adjustPointsReason" class="w-full px-5 py-4 rounded-3xl border-2 border-slate-100 text-sm font-bold min-h-[80px] outline-none transition-all placeholder:text-slate-300 leading-relaxed text-slate-900 leading-normal" placeholder="Lý do điều chỉnh (Tùy chọn)..."></textarea>
                                     <button class="w-full py-4 bg-red-800 text-white rounded-[1.8rem] font-black uppercase text-sm shadow-lg hover:bg-red-700 transition-colors tracking-widest active:scale-95 leading-normal shadow-red-100">Cập nhật Cloud</button>
@@ -514,8 +563,8 @@
                                     <p class="text-base lg:text-lg font-black text-slate-800 leading-normal truncate">{{ formatCurrency(showDetailModal?.totalSpending) }}đ</p>
                                 </div>
                                 <div class="p-4 bg-purple-50 rounded-[1.5rem] border border-purple-100 shadow-inner flex flex-col justify-center items-center text-center leading-normal">
-                                    <p class="text-[9px] font-black text-purple-400 uppercase mb-1 tracking-widest leading-normal truncate">Ghé (CK)</p>
-                                    <p class="text-base lg:text-lg font-black text-purple-700 leading-normal truncate">{{ getVisitsThisCycle(showDetailModal) }} lần</p>
+                                    <p class="text-[9px] font-black text-purple-400 uppercase mb-1 tracking-widest leading-normal truncate text-purple-400">Ghé (CK)</p>
+                                    <p class="text-base lg:text-lg font-black text-purple-700 leading-normal truncate text-purple-700">{{ getVisitsThisCycle(showDetailModal) }} lần</p>
                                 </div>
                                 <div class="p-4 bg-slate-50 rounded-[1.5rem] border border-slate-100 shadow-inner flex flex-col justify-center items-center text-center leading-normal">
                                     <p class="text-[9px] font-black text-slate-400 uppercase mb-1 tracking-widest leading-normal truncate">Tham gia</p>
@@ -523,16 +572,16 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col h-full min-w-0 leading-normal text-slate-900 text-left leading-normal">
-                            <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3 uppercase text-xs tracking-widest leading-normal leading-normal"><i data-lucide="file-text" class="w-5 h-5 text-slate-400 font-black shrink-0 leading-normal leading-normal leading-normal"></i> Nhật ký hoạt động</h3>
-                            <div class="flex-1 bg-slate-50 rounded-[2.5rem] p-4 md:p-6 overflow-y-auto space-y-4 shadow-inner scrollbar-hide min-h-[350px] leading-normal leading-normal">
-                                <div v-for="(log, idx) in sortedDetailHistory" :key="idx" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 leading-normal leading-normal">
-                                    <div class="flex justify-between text-[9px] font-black uppercase text-slate-400 mb-1 gap-2 min-w-0 leading-normal leading-normal">
-                                        <span :class="getLogColor(log.type)" class="shrink-0 leading-normal leading-normal">{{ log.type }}</span>
-                                        <span class="truncate leading-normal text-right uppercase leading-normal leading-normal">{{ formatDateShort(log.date) }}</span>
+                        <div class="flex flex-col h-full min-w-0 leading-normal text-slate-900 text-left">
+                            <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3 uppercase text-xs tracking-widest leading-normal"><i data-lucide="file-text" class="w-5 h-5 text-slate-400 font-black shrink-0 leading-normal"></i> Nhật ký hoạt động</h3>
+                            <div class="flex-1 bg-slate-50 rounded-[2.5rem] p-4 md:p-6 overflow-y-auto space-y-4 shadow-inner scrollbar-hide min-h-[350px] leading-normal">
+                                <div v-for="(log, idx) in sortedDetailHistory" :key="idx" class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 leading-normal">
+                                    <div class="flex justify-between text-[9px] font-black uppercase text-slate-400 mb-1 gap-2 min-w-0 leading-normal text-slate-400">
+                                        <span :class="getLogColor(log.type)" class="shrink-0 leading-normal">{{ log.type }}</span>
+                                        <span class="truncate leading-normal text-right uppercase">{{ formatDateShort(log.date) }}</span>
                                     </div>
-                                    <p class="text-slate-700 font-bold text-sm leading-tight break-words text-left leading-normal leading-tight leading-normal leading-normal leading-normal leading-normal leading-normal leading-normal">{{ log.description }}</p>
-                                    <p v-if="log.amount !== 0" :class="log.amount > 0 ? 'text-emerald-600' : 'text-red-600'" class="font-black mt-2 text-base leading-normal leading-normal leading-normal leading-normal leading-normal leading-normal leading-normal leading-normal leading-normal">{{ log.amount > 0 ? '+' : '' }}{{ formatCurrency(log.amount) }}đ</p>
+                                    <p class="text-slate-700 font-bold text-sm leading-tight break-words text-left leading-tight leading-normal">{{ log.description }}</p>
+                                    <p v-if="log.amount !== 0" :class="log.amount > 0 ? 'text-emerald-600' : 'text-red-600'" class="font-black mt-2 text-base leading-normal">{{ log.amount > 0 ? '+' : '' }}{{ formatCurrency(log.amount) }}đ</p>
                                 </div>
                             </div>
                         </div>
@@ -540,17 +589,17 @@
                 </div>
 
                 <!-- Modal: Xóa -->
-                <div v-if="deleteConfirmation" class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 border border-white/20 text-center animate-in zoom-in-95 z-[600] text-slate-900 leading-normal text-center leading-normal">
-                    <div class="w-20 h-20 bg-red-100 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 rotate-6 shrink-0 shadow-inner leading-normal leading-normal text-red-600">
-                        <i data-lucide="alert-triangle" class="w-10 h-10 font-black leading-normal text-red-600 leading-normal leading-normal leading-normal leading-normal"></i>
+                <div v-if="deleteConfirmation" class="bg-white w-full max-w-sm rounded-[3rem] shadow-2xl p-10 border border-white/20 text-center animate-in zoom-in-95 z-[600] text-slate-900 leading-normal text-center">
+                    <div class="w-20 h-20 bg-red-100 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 rotate-6 shrink-0 shadow-inner leading-normal text-red-600 text-red-600">
+                        <i data-lucide="alert-triangle" class="w-10 h-10 font-black leading-normal text-red-600 text-red-600"></i>
                     </div>
-                    <h3 class="text-2xl font-black text-slate-800 mb-4 uppercase tracking-tighter text-red-600 leading-tight break-words text-center leading-normal leading-normal leading-normal">Xóa vĩnh viễn?</h3>
+                    <h3 class="text-2xl font-black text-slate-800 mb-4 uppercase tracking-tighter text-red-600 leading-tight break-words text-center leading-normal text-red-600">Xóa vĩnh viễn?</h3>
                     <p class="text-slate-500 text-sm mb-10 leading-relaxed font-bold break-words px-4 leading-relaxed leading-normal text-slate-500">
-                        Dữ liệu khách hàng <span class="text-red-800 uppercase leading-normal leading-normal">{{ deleteConfirmation?.name }}</span> sẽ bị gỡ khỏi Cloud.
+                        Dữ liệu khách hàng <span class="text-red-800 uppercase leading-normal">{{ deleteConfirmation?.name }}</span> sẽ bị gỡ khỏi Cloud.
                     </p>
-                    <div class="flex flex-col gap-3 leading-normal leading-normal">
-                        <button @click="confirmDelete" class="w-full py-5 bg-red-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-200 transition-all active:scale-95 leading-normal leading-normal">Xác nhận xóa</button>
-                        <button @click="deleteConfirmation = null" class="w-full py-4 bg-slate-100 text-slate-600 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 leading-normal leading-normal">Hủy bỏ</button>
+                    <div class="flex flex-col gap-3 leading-normal">
+                        <button @click="confirmDelete" class="w-full py-5 bg-red-600 text-white rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-red-700 shadow-xl shadow-red-200 transition-all active:scale-95 leading-normal">Xác nhận xóa</button>
+                        <button @click="deleteConfirmation = null" class="w-full py-4 bg-slate-100 text-slate-600 rounded-3xl font-black text-sm uppercase tracking-widest hover:bg-slate-200 transition-all active:scale-95 leading-normal">Hủy bỏ</button>
                     </div>
                 </div>
             </div>
@@ -708,72 +757,45 @@
                         const now = new Date();
                         for (const m of members.value) {
                             if (!m.lastResetDate) continue;
-                            
                             const diffDays = getDaysDifferenceGMT7(now, new Date(m.lastResetDate));
                             let updates = null;
-
-                            if (!m.tier) {
-                                updates = { tier: calculateTierFromSpending(m.spendingLast30Days) };
-                            }
-
+                            if (!m.tier) updates = { tier: calculateTierFromSpending(m.spendingLast30Days) };
                             if (diffDays >= CYCLE_DAYS) {
                                 const currentTierId = m.tier || (updates ? updates.tier : calculateTierFromSpending(m.spendingLast30Days));
                                 const earnedTierId = calculateTierFromSpending(m.spendingLast30Days);
                                 let nextTierId = currentTierId;
-                                if (TIERS[earnedTierId].threshold < TIERS[currentTierId].threshold) {
-                                    nextTierId = getPreviousTierId(currentTierId);
-                                } else {
-                                    nextTierId = earnedTierId;
-                                }
-                                
-                                updates = {
-                                    ...updates,
-                                    tier: nextTierId, 
-                                    spendingLast30Days: 0, 
-                                    points: 0, 
-                                    lastResetDate: now.toISOString(),
-                                    history: [...(m.history || []), { date: now.toISOString(), type: 'CYCLE_RESET', description: `Chu kỳ mới. Hạng: ${TIERS[currentTierId].name} -> ${TIERS[nextTierId].name}.`, amount: 0 }]
-                                };
+                                if (TIERS[earnedTierId].threshold < TIERS[currentTierId].threshold) nextTierId = getPreviousTierId(currentTierId);
+                                else nextTierId = earnedTierId;
+                                updates = { ...updates, tier: nextTierId, spendingLast30Days: 0, points: 0, lastResetDate: now.toISOString(), history: [...(m.history || []), { date: now.toISOString(), type: 'CYCLE_RESET', description: `Chu kỳ mới. Hạng: ${TIERS[currentTierId].name} -> ${TIERS[nextTierId].name}.`, amount: 0 }] };
                             }
-                            
-                            if (updates) {
-                                updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', m.id), updates).catch(()=>{});
-                            }
+                            if (updates) updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', m.id), updates).catch(()=>{});
                         }
                     } catch(e) { console.error(e); }
                 };
 
                 const checkLogin = async () => {
                     if (!loginPassword.value) return;
-                    
                     loading.value = true;
                     try {
-                        // Tìm trên Database xem có tài liệu nào tên bằng mật khẩu vừa nhập không
                         const docRef = doc(db, 'system_configs', loginPassword.value);
                         const docSnap = await getDoc(docRef);
-
                         if (docSnap.exists()) {
                             isAuthorized.value = true; 
                             sessionStorage.setItem('bo888_auth', 'true'); 
                             loginError.value = false;
                             nextTick(() => lucide.createIcons());
                         } else {
-                            loginError.value = true; 
-                            loginPassword.value = '';
+                            loginError.value = true; loginPassword.value = '';
                         }
                     } catch (error) {
-                        console.error("Lỗi xác thực:", error);
-                        loginError.value = true;
-                        loginPassword.value = '';
+                        loginError.value = true; loginPassword.value = '';
                     } finally {
                         loading.value = false;
                     }
                 };
 
                 const logout = () => {
-                    isAuthorized.value = false; 
-                    sessionStorage.removeItem('bo888_auth'); 
-                    loginPassword.value = '';
+                    isAuthorized.value = false; sessionStorage.removeItem('bo888_auth'); loginPassword.value = '';
                 };
 
                 const getLogColor = (type) => {
@@ -782,6 +804,7 @@
                     return 'text-blue-500 font-black';
                 };
 
+                // Lọc danh sách khách hàng
                 const filteredMembers = computed(() => {
                     let res = members.value;
                     if (searchTerm.value) {
@@ -800,94 +823,66 @@
                     });
                 });
 
+                // Lọc khách hàng chuyên sâu
                 const advancedFilteredMembers = computed(() => {
                     let res = [...members.value];
-                    if (advFilterTier.value) {
-                        res = res.filter(m => (m.tier || 'NEW') === advFilterTier.value);
-                    }
-                    if (advDaysMode.value === '30') {
-                        res = res.filter(m => getDaysSinceLastVisit(m.lastVisitDate) >= 30);
-                    } else if (advDaysMode.value === '60') {
-                        res = res.filter(m => getDaysSinceLastVisit(m.lastVisitDate) >= 60);
-                    } else if (advDaysMode.value === 'custom') {
-                        const min = advDaysMin.value || 0; 
-                        const max = advDaysMax.value || 9999;
-                        res = res.filter(m => { 
-                            const d = getDaysSinceLastVisit(m.lastVisitDate); 
-                            return d >= min && d <= max; 
-                        });
+                    if (advFilterTier.value) res = res.filter(m => (m.tier || 'NEW') === advFilterTier.value);
+                    if (advDaysMode.value === '30') res = res.filter(m => getDaysSinceLastVisit(m.lastVisitDate) >= 30);
+                    else if (advDaysMode.value === '60') res = res.filter(m => getDaysSinceLastVisit(m.lastVisitDate) >= 60);
+                    else if (advDaysMode.value === 'custom') {
+                        const min = advDaysMin.value || 0; const max = advDaysMax.value || 9999;
+                        res = res.filter(m => { const d = getDaysSinceLastVisit(m.lastVisitDate); return d >= min && d <= max; });
                     }
                     res.sort((a, b) => getDaysSinceLastVisit(b.lastVisitDate) - getDaysSinceLastVisit(a.lastVisitDate));
                     return res;
+                });
+
+                // Lấy tất cả ý kiến của tất cả khách hàng
+                const allFeedbacks = computed(() => {
+                    let list = [];
+                    members.value.forEach(m => {
+                        (m.feedbacks || []).forEach((f, idx) => {
+                            list.push({
+                                ...f,
+                                memberName: m.name,
+                                memberPhone: m.phone,
+                                memberId: m.id,
+                                fbIndex: idx,
+                                newNoteInput: '' // Gắn ô nhập liệu tạm thời cho mỗi ý kiến
+                            });
+                        });
+                    });
+                    // Sắp xếp mới nhất lên đầu
+                    return list.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
                 });
 
                 const sortedDetailHistory = computed(() => [...(showDetailModal.value?.history || [])].reverse());
                 const sortedFeedbacks = computed(() => [...(feedbackMember.value?.feedbacks || [])].reverse());
 
                 onMounted(() => {
-                    const handleOnline = () => {
-                        isOnline.value = true;
-                        enableNetwork(db).catch(()=>{});
-                    };
-                    const handleOffline = () => {
-                        isOnline.value = false;
-                        disableNetwork(db).catch(()=>{});
-                    };
-                    
+                    const handleOnline = () => { isOnline.value = true; enableNetwork(db).catch(()=>{}); };
+                    const handleOffline = () => { isOnline.value = false; disableNetwork(db).catch(()=>{}); };
                     window.addEventListener('online', handleOnline);
                     window.addEventListener('offline', handleOffline);
-                    
-                    if (!navigator.onLine) {
-                        handleOffline();
-                    }
-                    
-                    const fallbackTimer = setTimeout(() => {
-                        if (loading.value) loading.value = false;
-                    }, 5000);
-
+                    if (!navigator.onLine) handleOffline();
+                    const fallbackTimer = setTimeout(() => { if (loading.value) loading.value = false; }, 5000);
                     let isSnapshotStarted = false;
-
                     const startSnapshot = () => {
                         if (isSnapshotStarted) return;
                         isSnapshotStarted = true;
-                        
                         onSnapshot(collection(db, 'artifacts', appId, 'public', 'data', 'members'), { includeMetadataChanges: true }, (snap) => {
-                            members.value = snap.docs.map(doc => ({ 
-                                id: doc.id, 
-                                ...doc.data(), 
-                                isPending: doc.metadata.hasPendingWrites 
-                            }));
-                            
+                            members.value = snap.docs.map(doc => ({ id: doc.id, ...doc.data(), isPending: doc.metadata.hasPendingWrites }));
                             if (feedbackMember.value) {
                                 const updatedMember = members.value.find(m => m.id === feedbackMember.value.id);
                                 if (updatedMember) feedbackMember.value = updatedMember;
                             }
-
-                            loading.value = false; 
-                            clearTimeout(fallbackTimer);
-                            
-                            if (!hasCheckedCycles.value && members.value.length > 0) {
-                                hasCheckedCycles.value = true;
-                                checkCycles(); 
-                            }
-                        }, (error) => {
-                            loading.value = false;
-                            clearTimeout(fallbackTimer);
-                        });
+                            loading.value = false; clearTimeout(fallbackTimer);
+                            if (!hasCheckedCycles.value && members.value.length > 0) { hasCheckedCycles.value = true; checkCycles(); }
+                        }, () => { loading.value = false; clearTimeout(fallbackTimer); });
                     };
-
                     onAuthStateChanged(auth, async (u) => {
-                        if (!u) {
-                            try {
-                                await signInAnonymously(auth);
-                            } catch (e) {
-                                loading.value = false;
-                                clearTimeout(fallbackTimer);
-                                startSnapshot(); 
-                            }
-                        } else {
-                            startSnapshot();
-                        }
+                        if (!u) { try { await signInAnonymously(auth); } catch (e) { loading.value = false; clearTimeout(fallbackTimer); startSnapshot(); } }
+                        else startSnapshot();
                     });
                 });
 
@@ -900,29 +895,22 @@
                     const isDuplicate = members.value.some(m => (m.phone || "").replace(/\D/g, "") === cleanPhone && m.id !== editingMember.value?.id);
                     if (isDuplicate) return notify("Số điện thoại này đã có trên hệ thống!", "error");
                     const now = new Date().toISOString();
-                    try {
-                        if (editingMember.value) {
-                            updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', editingMember.value.id), { ...formData.value, phone: cleanPhone }).catch(()=>{});
-                            notify("Đã cập nhật!");
-                        } else {
-                            addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'members'), { 
-                                name: formData.value.name, phone: cleanPhone, totalSpending: 0, spendingLast30Days: 0, points: 0, tier: 'NEW', feedbacks: [], joinDate: now, lastResetDate: now, lastVisitDate: now, history: [{ date: now, type: 'REGISTER', description: 'Đăng ký mới', amount: 0 }] 
-                            }).catch(()=>{});
-                            notify("Thành công!");
-                        }
-                        activeTab.value = 'list'; 
-                        searchTerm.value = '';
-                        editingMember.value = null;
-                    } catch (e) { notify("Lỗi lưu dữ liệu", "error"); }
+                    if (editingMember.value) {
+                        updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', editingMember.value.id), { ...formData.value, phone: cleanPhone }).catch(()=>{});
+                        notify("Đã cập nhật!");
+                    } else {
+                        addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'members'), { 
+                            name: formData.value.name, phone: cleanPhone, totalSpending: 0, spendingLast30Days: 0, points: 0, tier: 'NEW', feedbacks: [], joinDate: now, lastResetDate: now, lastVisitDate: now, history: [{ date: now, type: 'REGISTER', description: 'Đăng ký mới', amount: 0 }] 
+                        }).catch(()=>{});
+                        notify("Thành công!");
+                    }
+                    activeTab.value = 'list'; searchTerm.value = ''; editingMember.value = null;
                 };
 
                 const confirmDelete = () => {
                     if(!deleteConfirmation.value) return;
-                    try {
-                        deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', deleteConfirmation.value.id)).catch(()=>{});
-                        deleteConfirmation.value = null; 
-                        notify("Đã xóa khỏi Cloud!", "error");
-                    } catch (e) { notify("Lỗi khi xóa dữ liệu", "error"); }
+                    deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', deleteConfirmation.value.id)).catch(()=>{});
+                    deleteConfirmation.value = null; notify("Đã xóa khỏi Cloud!", "error");
                 };
 
                 const handleTransaction = () => {
@@ -935,49 +923,63 @@
                     const earnedTierId = calculateTierFromSpending(newSpending30);
                     let finalTierId = currentTierId;
                     if (TIERS[earnedTierId].threshold > TIERS[currentTierId].threshold) finalTierId = earnedTierId;
-
                     const invStr = invoiceNumber.value ? ` (Mã HĐ: ${invoiceNumber.value})` : '';
-
                     updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', selectedMember.value.id), { 
                         totalSpending: (selectedMember.value.totalSpending || 0) + billAmount.value, spendingLast30Days: newSpending30, points: (selectedMember.value.points || 0) - ptsUsed + ptsEarned, tier: finalTierId, lastVisitDate: now, 
                         history: [...(selectedMember.value.history || []), { date: now, type: 'BILL', description: `Hóa đơn${invStr}: ${formatCurrency(billAmount.value)}đ (-${formatCurrency(ptsUsed)}đ điểm, +${formatCurrency(ptsEarned)}đ tích)`, amount: ptsEarned - ptsUsed }] 
                     }).catch(()=>{});
-                    
                     notify(`+${ptsEarned.toLocaleString()}đ tích lũy! ${finalTierId !== currentTierId ? 'Đã thăng hạng!' : ''}`);
-                    billAmount.value = null; 
-                    usePoints.value = false; 
-                    selectedMember.value = null; 
-                    invoiceNumber.value = '';
+                    billAmount.value = null; usePoints.value = false; selectedMember.value = null; invoiceNumber.value = '';
                 };
 
                 const handleAdjustPoints = () => {
                     const val = parseInt(adjustPointsValue.value) || 0;
                     if (val === 0 && !adjustPointsReason.value) return;
-
                     const now = new Date().toISOString();
                     const newPts = Math.max(0, (showDetailModal.value.points || 0) + val);
                     const log = { date: now, type: 'MANUAL_ADJUST', description: adjustPointsReason.value || 'Điều chỉnh thủ công', amount: val };
                     updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', showDetailModal.value.id), { points: newPts, history: [...(showDetailModal.value.history || []), log] }).catch(()=>{});
-                    showDetailModal.value.points = newPts; 
-                    showDetailModal.value.history.push(log);
-                    adjustPointsValue.value = null; 
-                    adjustPointsReason.value = ''; 
-                    notify("Đã cập nhật!");
+                    showDetailModal.value.points = newPts; showDetailModal.value.history.push(log);
+                    adjustPointsValue.value = null; adjustPointsReason.value = ''; notify("Đã cập nhật!");
                 };
 
                 const submitFeedback = () => {
                     if (!newFeedbackContent.value.trim() || !feedbackMember.value) return;
                     const now = new Date().toISOString();
-                    const newFb = { date: now, content: newFeedbackContent.value.trim() };
+                    const newFb = { date: now, content: newFeedbackContent.value.trim(), resolution: '' };
                     const updatedFeedbacks = [...(feedbackMember.value.feedbacks || []), newFb];
-
-                    updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', feedbackMember.value.id), {
-                        feedbacks: updatedFeedbacks
-                    }).catch(()=>{});
-                    
+                    updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', feedbackMember.value.id), { feedbacks: updatedFeedbacks }).catch(()=>{});
                     feedbackMember.value.feedbacks = updatedFeedbacks;
                     newFeedbackContent.value = '';
                     notify('Đã ghi nhận ý kiến khách hàng!', 'success');
+                };
+
+                // LOGIC CẬP NHẬT: LƯU NHẬT KÝ XỬ LÝ VÀ XÓA Ô NHẬP
+                const saveResolution = (fb) => {
+                    if (!fb.newNoteInput.trim()) return notify("Vui lòng nhập nội dung!", "error");
+                    
+                    const member = members.value.find(m => m.id === fb.memberId);
+                    if (!member) return;
+
+                    const now = new Date();
+                    const timeStr = shortDateFormatter.format(now);
+                    const newEntry = `[${timeStr}] ${fb.newNoteInput.trim()}`;
+
+                    const updatedFeedbacks = [...member.feedbacks];
+                    const currentResolution = updatedFeedbacks[fb.fbIndex].resolution || '';
+                    
+                    // Cộng dồn nội dung
+                    updatedFeedbacks[fb.fbIndex].resolution = currentResolution ? currentResolution + '\n' + newEntry : newEntry;
+
+                    updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', fb.memberId), { 
+                        feedbacks: updatedFeedbacks 
+                    }).then(() => {
+                        // Làm trống ô nhập liệu sau khi lưu thành công
+                        fb.newNoteInput = '';
+                        notify("Đã ghi nhận nhật ký xử lý!");
+                    }).catch(() => {
+                        notify("Lỗi đồng bộ dữ liệu!", "error");
+                    });
                 };
 
                 const exportToCSV = () => {
@@ -985,10 +987,7 @@
                     const rows = members.value.map(m => `${m.name},'${m.phone},${getTierConfigById(m.tier || 'NEW').name},${m.points},${getVisitsThisCycle(m)},${(m.feedbacks || []).length},${m.spendingLast30Days},${m.totalSpending},${m.lastVisitDate},${m.joinDate}`).join("\n");
                     const blob = new Blob(["\uFEFF" + header + rows], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a"); 
-                    link.href = url; 
-                    link.download = `Bo888_Full_Backup.csv`; 
-                    link.click();
+                    const link = document.createElement("a"); link.href = url; link.download = `Bo888_Full_Backup.csv`; link.click();
                 };
 
                 const exportAdvancedToCSV = () => {
@@ -997,10 +996,7 @@
                     const rows = advancedFilteredMembers.value.map(m => `${m.name},'${m.phone},${getTierConfigById(m.tier || 'NEW').name},${m.points},${getVisitsThisCycle(m)},${(m.feedbacks || []).length},${getDaysSinceLastVisit(m.lastVisitDate)},${m.spendingLast30Days},${m.totalSpending}`).join("\n");
                     const blob = new Blob(["\uFEFF" + header + rows], { type: 'text/csv;charset=utf-8;' });
                     const url = URL.createObjectURL(blob);
-                    const link = document.createElement("a"); 
-                    link.href = url; 
-                    link.download = `Bo888_Bao_Cao_Loc.csv`; 
-                    link.click();
+                    const link = document.createElement("a"); link.href = url; link.download = `Bo888_Bao_Cao_Loc.csv`; link.click();
                 };
 
                 const handleImportCSV = (e) => {
@@ -1015,7 +1011,7 @@
                             const phone = (cols[1] || "").replace(/'/g, '').trim();
                             if (!phone) continue;
                             const existing = members.value.find(m => (m.phone || "").replace(/\D/g, "") === phone.replace(/\D/g, ""));
-                            const data = { name: cols[0]||'Khách', phone, points: parseInt(cols[3]) || 0, spendingLast30Days: parseInt(cols[6]) || parseInt(cols[5]) || parseInt(cols[4]) || 0, totalSpending: parseInt(cols[7]) || parseInt(cols[6]) || parseInt(cols[5]) || 0, tier: calculateTierFromSpending(parseInt(cols[6]) || parseInt(cols[5]) || parseInt(cols[4]) || 0), feedbacks: [], lastVisitDate: cols[8] || cols[7] || cols[6] || new Date().toISOString(), joinDate: cols[9] || cols[8] || cols[7] || new Date().toISOString(), lastResetDate: new Date().toISOString(), history: [{ date: new Date().toISOString(), type: 'IMPORT', description: 'Khôi phục file', amount: 0 }] };
+                            const data = { name: cols[0]||'Khách', phone, points: parseInt(cols[3]) || 0, spendingLast30Days: parseInt(cols[6]) || 0, totalSpending: parseInt(cols[7]) || 0, tier: calculateTierFromSpending(parseInt(cols[6]) || 0), feedbacks: [], lastVisitDate: cols[8] || new Date().toISOString(), joinDate: cols[9] || new Date().toISOString(), lastResetDate: new Date().toISOString(), history: [{ date: new Date().toISOString(), type: 'IMPORT', description: 'Khôi phục file', amount: 0 }] };
                             if (existing) updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', existing.id), data).catch(()=>{});
                             else addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'members'), data).catch(()=>{});
                         }
@@ -1024,39 +1020,17 @@
                     reader.readAsText(file);
                 };
 
-                const openAddTab = (phone = '') => { 
-                    editingMember.value = null; 
-                    formData.value = { name: '', phone: phone }; 
-                    activeTab.value = 'add'; 
-                };
-
-                const showDetail = (m) => { 
-                    showDetailModal.value = m; 
-                };
-
-                const openTransaction = (m) => { 
-                    selectedMember.value = m; 
-                    billAmount.value = null; 
-                    usePoints.value = false; 
-                    invoiceNumber.value = ''; 
-                };
-                
-                const openFeedback = (m) => {
-                    feedbackMember.value = m;
-                    newFeedbackContent.value = '';
-                };
-
-                const editMember = (m) => { 
-                    editingMember.value = m; 
-                    formData.value = { name: m.name, phone: m.phone }; 
-                    activeTab.value = 'add'; 
-                };
+                const openAddTab = (phone = '') => { editingMember.value = null; formData.value = { name: '', phone: phone }; activeTab.value = 'add'; };
+                const showDetail = (m) => { showDetailModal.value = m; };
+                const openTransaction = (m) => { selectedMember.value = m; billAmount.value = null; usePoints.value = false; invoiceNumber.value = ''; };
+                const openFeedback = (m) => { feedbackMember.value = m; newFeedbackContent.value = ''; };
+                const editMember = (m) => { editingMember.value = m; formData.value = { name: m.name, phone: m.phone }; activeTab.value = 'add'; };
 
                 return {
-                    appId, isAuthorized, loginPassword, loginError, loading, isOnline, activeTab, viewMode, searchTerm, members, filteredMembers, advancedFilteredMembers, notification, selectedMember, showDetailModal, deleteConfirmation, editingMember, feedbackMember, formData, invoiceNumber, billAmount, usePoints, adjustPointsValue, adjustPointsReason, newFeedbackContent, sortedDetailHistory, sortedFeedbacks, tierOptions,
+                    appId, isAuthorized, loginPassword, loginError, loading, isOnline, activeTab, viewMode, searchTerm, members, filteredMembers, advancedFilteredMembers, allFeedbacks, notification, selectedMember, showDetailModal, deleteConfirmation, editingMember, feedbackMember, formData, invoiceNumber, billAmount, usePoints, adjustPointsValue, adjustPointsReason, newFeedbackContent, sortedDetailHistory, sortedFeedbacks, tierOptions,
                     advFilterTier, advDaysMode, advDaysMin, advDaysMax,
                     checkLogin, logout, formatCurrency, formatSpending, formatDateShort, formatDateOnly, getTierConfigById, getDaysSinceLastVisit, getDaysRemaining, getVisitsThisCycle, getLogColor, 
-                    handleSubmitMember, confirmDelete, handleTransaction, handleAdjustPoints, submitFeedback, exportToCSV, exportAdvancedToCSV, handleImportCSV, 
+                    handleSubmitMember, confirmDelete, handleTransaction, handleAdjustPoints, submitFeedback, saveResolution, exportToCSV, exportAdvancedToCSV, handleImportCSV, 
                     openAddTab, showDetail, openTransaction, openFeedback, editMember
                 };
             }
