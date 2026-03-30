@@ -655,28 +655,18 @@
         };
 
         const appInstance = initializeApp(firebaseConfig);
+		// --- ĐOẠN CODE THÊM MỚI CHO APP CHECK ---
+		// Dòng này giúp anh chạy test file trên máy tính (localhost) không bị Firebase chặn
+		if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+		self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+		}
 
-        // KHỞI TẠO APP CHECK AN TOÀN
-        try {
-            const siteKey = '6Lf59p0sAAAAAADePumCdEmaSadJkG1DvwP-g5zV-'; // Thay khóa của bạn vào đây
-            
-            if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-                self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-            }
-            
-            // Chỉ khởi tạo khi đã thay Site Key thật để tránh lỗi ReCAPTCHA error
-            if (siteKey && siteKey !== '6Lf59p0sAAAAAADePumCdEmaSadJkG1DvwP-g5zV-') {
-                initializeAppCheck(appInstance, {
-                    provider: new ReCaptchaV3Provider(siteKey), 
-                    isTokenAutoRefreshEnabled: true
-                });
-            } else {
-                console.warn("⚠️ Firebase App Check đang tắt: Bạn chưa điền mã Site Key reCAPTCHA hợp lệ.");
-            }
-        } catch (error) {
-            console.error("Khởi tạo App Check thất bại:", error);
-        }
-
+		const appCheck = initializeAppCheck(appInstance, {
+		// THAY MÃ SITE KEY CỦA ANH VÀO DÒNG BÊN DƯỚI (Lấy ở Bước 1)
+		provider: new ReCaptchaV3Provider('6Lf59p0sAAAAAADePumCdEmaSadJkG1DvwP-g5zV-'), 
+		isTokenAutoRefreshEnabled: true
+		});
+		// ----------------------------------------
         const auth = getAuth(appInstance);
         const db = initializeFirestore(appInstance, {
             localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
