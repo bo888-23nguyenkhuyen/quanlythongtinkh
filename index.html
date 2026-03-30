@@ -365,7 +365,7 @@
                         </div>
                         <div class="space-y-2 min-w-0 leading-normal text-slate-900">
                             <label class="block text-[10px] font-black text-slate-400 uppercase ml-2 tracking-[0.2em] leading-normal">Số điện thoại (Đây sẽ là ID)</label>
-                            <input v-model="formData.phone" required type="tel" :disabled="!!editingMember" class="w-full px-6 py-5 rounded-3xl border-2 border-slate-100 focus:border-red-800 focus:ring-4 focus:ring-red-50 focus:outline-none font-bold text-lg transition-all min-w-0 leading-normal disabled:bg-slate-100 disabled:text-slate-400">
+                            <input v-model="formData.phone" required type="tel" class="w-full px-6 py-5 rounded-3xl border-2 border-slate-100 focus:border-red-800 focus:ring-4 focus:ring-red-50 focus:outline-none font-bold text-lg transition-all min-w-0 leading-normal disabled:bg-slate-100 disabled:text-slate-400">
                         </div>
                         <div class="flex flex-col sm:flex-row gap-4 pt-6 leading-normal">
                             <button type="button" @click="activeTab = 'list'" class="w-full sm:flex-1 py-5 border-2 border-slate-100 rounded-3xl hover:bg-slate-50 transition font-black text-slate-500 uppercase tracking-widest text-xs leading-normal">Quay lại</button>
@@ -627,7 +627,6 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Bổ sung setDoc vào import
         import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, disableNetwork, enableNetwork } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -792,13 +791,28 @@
                             const diffDays = getDaysDifferenceGMT7(now, new Date(m.lastResetDate));
                             let updates = null;
                             if (!m.tier) updates = { tier: calculateTierFromSpending(m.spendingLast30Days) };
+                            
                             if (diffDays >= CYCLE_DAYS) {
                                 const currentTierId = m.tier || (updates ? updates.tier : calculateTierFromSpending(m.spendingLast30Days));
                                 const earnedTierId = calculateTierFromSpending(m.spendingLast30Days);
                                 let nextTierId = currentTierId;
                                 if (TIERS[earnedTierId].threshold < TIERS[currentTierId].threshold) nextTierId = getPreviousTierId(currentTierId);
                                 else nextTierId = earnedTierId;
-                                updates = { ...updates, tier: nextTierId, spendingLast30Days: 0, points: 0, lastResetDate: now.toISOString(), history: [...(m.history || []), { date: now.toISOString(), type: 'CYCLE_RESET', description: `Chu kỳ mới. Hạng: ${TIERS[currentTierId].name} -> ${TIERS[nextTierId].name}.`, amount: 0 }] };
+                                
+                                // TÍNH CHÍNH XÁC MỐC CHU KỲ MỚI (Tránh bị trôi do ngày khách truy cập)
+                                const oldResetD = new Date(m.lastResetDate);
+                                const cyclesToAdvance = Math.floor(diffDays / CYCLE_DAYS);
+                                const nextResetD = new Date(oldResetD);
+                                nextResetD.setDate(nextResetD.getDate() + (cyclesToAdvance * CYCLE_DAYS));
+
+                                updates = { 
+                                    ...updates, 
+                                    tier: nextTierId, 
+                                    spendingLast30Days: 0, 
+                                    points: 0, 
+                                    lastResetDate: nextResetD.toISOString(), 
+                                    history: [...(m.history || []), { date: now.toISOString(), type: 'CYCLE_RESET', description: `Chu kỳ mới. Hạng: ${TIERS[currentTierId].name} -> ${TIERS[nextTierId].name}.`, amount: 0 }] 
+                                };
                             }
                             if (updates) updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', m.id), updates).catch(()=>{});
                         }
@@ -867,7 +881,6 @@
                     return res;
                 });
 
-                // PHẢI KHAI BÁO CÁC COMPUTED NÀY TRƯỚC KHI GỌI ONMOUNTED / WATCH
                 const allFeedbacks = computed(() => {
                     let list = [];
                     members.value.forEach(m => {
@@ -945,24 +958,46 @@
                     nextTick(() => lucide.createIcons());
                 });
 
-                const handleSubmitMember = () => {
+                const handleSubmitMember = async () => {
                     const cleanPhone = formData.value.phone.replace(/\D/g, "");
+                    if (!cleanPhone || cleanPhone.length < 9) {
+                        return notify("Vui lòng nhập Số điện thoại hợp lệ!", "error");
+                    }
+
                     const isDuplicate = members.value.some(m => (m.phone || "").replace(/\D/g, "") === cleanPhone && m.id !== editingMember.value?.id);
                     if (isDuplicate) return notify("Số điện thoại này đã có trên hệ thống!", "error");
-                    const now = new Date().toISOString();
                     
-                    if (editingMember.value) {
-                        // Sửa thông tin
-                        updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', editingMember.value.id), { ...formData.value, phone: cleanPhone }).catch(()=>{});
-                        notify("Đã cập nhật!");
-                    } else {
-                        // TẠO MỚI: DÙNG SỐ ĐIỆN THOẠI LÀM DOCUMENT ID
-                        setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', cleanPhone), { 
-                            name: formData.value.name, phone: cleanPhone, totalSpending: 0, spendingLast30Days: 0, points: 0, tier: 'NEW', feedbacks: [], joinDate: now, lastResetDate: now, lastVisitDate: now, history: [{ date: now, type: 'REGISTER', description: 'Đăng ký mới', amount: 0 }] 
-                        }).catch(()=>{});
-                        notify("Thành công!");
+                    const now = new Date().toISOString();
+                    loading.value = true;
+                    
+                    try {
+                        if (editingMember.value) {
+                            const oldId = editingMember.value.id;
+                            if (oldId !== cleanPhone) {
+                                const { id, isPending, ...oldData } = editingMember.value;
+                                const newData = { ...oldData, ...formData.value, phone: cleanPhone };
+                                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', cleanPhone), newData);
+                                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', oldId));
+                                notify("Đã cập nhật SĐT và ID mới thành công!");
+                            } else {
+                                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', oldId), { ...formData.value, phone: cleanPhone });
+                                notify("Đã cập nhật thông tin!");
+                            }
+                        } else {
+                            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', cleanPhone), { 
+                                name: formData.value.name, phone: cleanPhone, totalSpending: 0, spendingLast30Days: 0, points: 0, tier: 'NEW', feedbacks: [], joinDate: now, lastResetDate: now, lastVisitDate: now, history: [{ date: now, type: 'REGISTER', description: 'Đăng ký mới', amount: 0 }] 
+                            });
+                            notify("Thêm khách hàng thành công!");
+                        }
+                        activeTab.value = 'list'; 
+                        searchTerm.value = ''; 
+                        editingMember.value = null;
+                    } catch (error) {
+                        console.error("Lỗi khi lưu khách hàng:", error);
+                        notify("Có lỗi xảy ra, vui lòng thử lại!", "error");
+                    } finally {
+                        loading.value = false;
                     }
-                    activeTab.value = 'list'; searchTerm.value = ''; editingMember.value = null;
                 };
 
                 const confirmDelete = () => {
@@ -1052,7 +1087,7 @@
                     const link = document.createElement("a"); link.href = url; link.download = `Bo888_Bao_Cao_Loc.csv`; link.click();
                 };
 
-                // CẬP NHẬT: NHẬP CSV ĐỂ SỬ DỤNG SĐT LÀM DOCUMENT ID
+                // CẬP NHẬT: LOGIC IMPORT CSV GIỮ NGUYÊN HOÀN TOÀN CHU KỲ VÀ SỐ LẦN GHÉ
                 const handleImportCSV = (e) => {
                     const file = e.target.files[0];
                     if (!file) return;
@@ -1067,16 +1102,46 @@
                             for (const line of lines) {
                                 if (!line.trim()) continue;
                                 const cols = line.split(',');
+                                if (cols.length < 10) continue; // Bỏ qua nếu dòng bị lỗi thiếu cột
                                 
-                                // Lấy Số điện thoại: Dọn dẹp dấu nháy đơn, khoảng trắng và chữ cái
                                 const phone = (cols[1] || "").replace(/'/g, '').replace(/\D/g, "").trim();
-                                if (!phone) continue;
+                                if (!phone || phone.length < 9) continue;
                                 
                                 const points = parseInt(cols[3]) || 0;
+                                const visits = parseInt(cols[4]) || 0;
                                 const spendingLast30Days = parseInt(cols[6]) || 0;
                                 const totalSpending = parseInt(cols[7]) || 0;
                                 const lastVisitDate = cols[8] ? cols[8].trim() : new Date().toISOString();
                                 const joinDate = cols[9] ? cols[9].trim() : new Date().toISOString();
+                                
+                                // TÍNH TOÁN LẠI CHÍNH XÁC MỐC CHU KỲ DỰA VÀO NGÀY ĐĂNG KÝ
+                                const joinD = new Date(joinDate);
+                                const nowD = new Date();
+                                const daysSinceJoin = getDaysDifferenceGMT7(nowD, joinD);
+                                let cycles = 0;
+                                if (daysSinceJoin > 0) {
+                                    cycles = Math.floor(daysSinceJoin / CYCLE_DAYS);
+                                }
+                                const lastResetD = new Date(joinD);
+                                lastResetD.setDate(lastResetD.getDate() + (cycles * CYCLE_DAYS));
+                                const lastResetDateStr = lastResetD.toISOString();
+
+                                const history = [
+                                    { date: new Date().toISOString(), type: 'IMPORT', description: 'Khôi phục dữ liệu từ file Backup', amount: points }
+                                ];
+
+                                // TẠO HÓA ĐƠN GIẢ (DUMMY BILLS) ĐỂ KHÔI PHỤC "SỐ LẦN GHÉ"
+                                // Đặt ngày của dummy bill ngay sau mốc lastResetDate để hàm getVisitsThisCycle đếm được
+                                const dummyDate = new Date(lastResetD.getTime() + 1000); 
+                                for(let i=0; i<visits; i++) {
+                                    history.push({
+                                        date: dummyDate.toISOString(),
+                                        type: 'BILL',
+                                        description: 'Ghi nhận số lần ghé từ dữ liệu cũ',
+                                        amount: 0
+                                    });
+                                    dummyDate.setSeconds(dummyDate.getSeconds() + 1);
+                                }
                                 
                                 const data = { 
                                     name: cols[0] || 'Khách', 
@@ -1088,11 +1153,10 @@
                                     feedbacks: [], 
                                     lastVisitDate: lastVisitDate, 
                                     joinDate: joinDate, 
-                                    lastResetDate: new Date().toISOString(), 
-                                    history: [{ date: new Date().toISOString(), type: 'IMPORT', description: 'Khôi phục từ file Backup', amount: points }] 
+                                    lastResetDate: lastResetDateStr, 
+                                    history: history 
                                 };
                                 
-                                // Sử dụng setDoc để Document ID bằng đúng SĐT
                                 await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', phone), data);
                                 count++;
                             }
