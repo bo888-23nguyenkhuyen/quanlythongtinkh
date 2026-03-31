@@ -639,9 +639,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, initializeFirestore, persistentLocalCache, persistentMultipleTabManager, disableNetwork, enableNetwork } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        
-        // IMPORT APP CHECK & RECAPTCHA
-        import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app-check.js";
 
         const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
 
@@ -655,18 +652,6 @@
         };
 
         const appInstance = initializeApp(firebaseConfig);
-		// --- ĐOẠN CODE THÊM MỚI CHO APP CHECK ---
-		// Dòng này giúp anh chạy test file trên máy tính (localhost) không bị Firebase chặn
-		if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
-		self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-		}
-
-		const appCheck = initializeAppCheck(appInstance, {
-		// THAY MÃ SITE KEY CỦA ANH VÀO DÒNG BÊN DƯỚI (Lấy ở Bước 1)
-		provider: new ReCaptchaV3Provider('6Lf59p0sAAAAAADePumCdEmaSadJkG1DvwP-g5zV-'), 
-		isTokenAutoRefreshEnabled: true
-		});
-		// ----------------------------------------
         const auth = getAuth(appInstance);
         const db = initializeFirestore(appInstance, {
             localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})
