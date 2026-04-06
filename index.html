@@ -1024,7 +1024,9 @@
                         try {
                             await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
                             loginError.value = false;
-                            // Code onAuthStateChanged bên dưới sẽ tự động load data
+                            // FIX: Ép tắt màn hình loading ngay khi Firebase xác thực mật khẩu xong.
+                            // Giao diện sẽ hiện ra ngay, data sẽ tự động đổ vào vài mili-giây sau đó.
+                            loading.value = false;
                         } catch (error) {
                             console.error("Lỗi đăng nhập:", error);
                             loginError.value = true;
@@ -1035,10 +1037,8 @@
 
                     const logout = async () => {
                         await signOut(auth);
-                        isAuthorized.value = false;
-                        loginEmail.value = '';
-                        loginPassword.value = '';
-                        members.value = [];
+                        // FIX: Tải lại trang khi đăng xuất để xóa sạch bộ đệm dữ liệu và các kết nối ngầm của phiên làm việc cũ
+                        window.location.reload();
                     };
 
                     const getLogColor = (type) => {
