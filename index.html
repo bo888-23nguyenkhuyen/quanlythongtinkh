@@ -1185,6 +1185,8 @@
                                 isAuthorized.value = false;
                                 loading.value = false;
                                 clearTimeout(fallbackTimer);
+                                // FIX: Gọi lệnh render icon cho màn hình Đăng nhập
+                                nextTick(() => lucide.createIcons());
                             }
                         });
                     }
