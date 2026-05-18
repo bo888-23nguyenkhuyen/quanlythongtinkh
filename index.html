@@ -683,7 +683,7 @@
                                     <span v-if="usePoints" class="text-red-400 font-black text-lg md:text-xl shrink-0 leading-normal">-{{ formatCurrency(Math.min(selectedMember?.points || 0, remainingAfterPrepaid)) }}đ</span>
                                 </div>
 
-                                <!-- THỰC THU SAU KHI KHẤU TRỪ VÍ VÀ ĐIỂM -->
+                                <!-- THỰC THU SAU KHẤU TRỪ VÀ ĐIỂM -->
                                 <div class="flex flex-col items-start pt-4 md:pt-6 border-t border-white/10 relative z-10 gap-2 min-w-0 leading-normal text-left">
                                     <span class="text-slate-500 font-black uppercase text-[10px] tracking-[0.4em] w-full leading-normal">Thực thu tại quầy</span>
                                     <div class="relative flex items-end w-full justify-end leading-normal text-white mt-1">
@@ -905,11 +905,11 @@
 
                     // Ví điểm và Ví trả trước hỗ trợ thanh toán
                     const usePoints = ref(false);
-                    const usePrepaid = ref(false);
+                    const usePrepaid = ref(false); // Đã định nghĩa và khai báo dùng ví trả trước
                     const adjustPointsValue = ref(null);
                     const adjustPointsReason = ref('');
                     
-                    // Thêm trường dữ liệu cho nạp/trừ ví trả trước thủ công
+                    // Thêm trường dữ liệu cho nạp/trừ ví trả trước thủ công dành cho Admin
                     const adjustPrepaidValue = ref(null);
                     const adjustPrepaidReason = ref('');
 
@@ -1201,14 +1201,14 @@
                     const sortedDetailHistory = computed( () => [...(showDetailModal.value?.history || [])].reverse());
                     const sortedFeedbacks = computed( () => [...(feedbackMember.value?.feedbacks || [])].reverse());
 
-                    // Tính toán số dư còn lại sau khi khấu trừ tự động Ví trả trước
+                    // [VUE COMPUTED MỚI]: Tính toán số dư còn lại sau khi trừ Ví trả trước tự động
                     const remainingAfterPrepaid = computed(() => {
                         const bill = billAmount.value || 0;
                         const prepaidUsed = usePrepaid.value ? Math.min(selectedMember.value?.prepaidBalance || 0, bill) : 0;
                         return Math.max(0, bill - prepaidUsed);
                     });
 
-                    // Tính toán thực thu thu ngân cần thu bằng tiền mặt/thẻ của khách sau khi áp dụng ví và điểm tích lũy
+                    // [VUE COMPUTED MỚI]: Thực tế thu ngân cần thu tại quầy của khách sau khi dùng Ví trả trước và Điểm thưởng
                     const actualCollected = computed(() => {
                         const bill = billAmount.value || 0;
                         const prepaidUsed = usePrepaid.value ? Math.min(selectedMember.value?.prepaidBalance || 0, bill) : 0;
@@ -1410,16 +1410,16 @@
                         }
                     };
 
-                    // Hàm xử lý thanh toán, khấu trừ tự động Ví trả trước và Tích điểm
+                    // [SỬA LỖI & PHÂN BỔ MỚI]: Đồng bộ hóa khấu trừ Ví trả trước tự động khi tích điểm
                     const handleTransaction = () => {
                         const currentTierId = selectedMember.value.tier || 'NEW';
                         const tierConfig = TIERS[currentTierId];
                         
-                        // Khấu trừ từ ví trả trước nếu có dùng
+                        // 1. Tính toán lượng khấu trừ từ ví trả trước nếu được chọn
                         const prepaidUsed = usePrepaid.value ? Math.min(selectedMember.value.prepaidBalance || 0, billAmount.value) : 0;
                         const remainingBill = Math.max(0, billAmount.value - prepaidUsed);
 
-                        // Điểm tích lũy sử dụng để chi trả phần còn lại của hóa đơn
+                        // 2. Tính toán lượng điểm tích lũy dùng để khấu trừ hóa đơn phần còn lại
                         const ptsUsed = usePoints.value ? Math.min(selectedMember.value.points, remainingBill) : 0;
                         const ptsEarned = Math.round(billAmount.value * tierConfig.cashback);
                         const now = new Date().toISOString();
@@ -1431,30 +1431,39 @@
                         
                         const invStr = invoiceNumber.value ? ` (Mã HĐ: ${invoiceNumber.value})` : '';
                         
-                        // Chuỗi mô tả nhật ký hoạt động
-                        const prepaidStr = prepaidUsed > 0 ? `, Trừ ví trả trước: -${formatCurrency(prepaidUsed)}đ (Dư ví: ${formatCurrency((selectedMember.value.prepaidBalance || 0) - prepaidUsed)}đ)` : '';
-                        const ptsStr = ptsUsed > 0 ? `, Dùng điểm: -${formatCurrency(ptsUsed)}đ` : '';
-                        const earnStr = ptsEarned > 0 ? `, Tích điểm: +${formatCurrency(ptsEarned)}đ` : '';
-                        
+                        // 3. Chuỗi ghi chú nhật ký hoạt động giao dịch
+                        let transactionDetails = [];
+                        if (prepaidUsed > 0) {
+                            transactionDetails.push(`Ví trả trước: -${formatCurrency(prepaidUsed)}đ`);
+                        }
+                        if (ptsUsed > 0) {
+                            transactionDetails.push(`Dùng điểm: -${formatCurrency(ptsUsed)}đ`);
+                        }
+                        if (ptsEarned > 0) {
+                            transactionDetails.push(`Tích: +${formatCurrency(ptsEarned)}đ`);
+                        }
+                        const detailsStr = transactionDetails.length > 0 ? ` (${transactionDetails.join(', ')})` : '';
+
                         updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'members', selectedMember.value.id), {
                             totalSpending: (selectedMember.value.totalSpending || 0) + billAmount.value,
                             spendingLast30Days: newSpending30,
                             points: (selectedMember.value.points || 0) - ptsUsed + ptsEarned,
-                            prepaidBalance: (selectedMember.value.prepaidBalance || 0) - prepaidUsed, // Cập nhật số dư ví trả trước
+                            prepaidBalance: (selectedMember.value.prepaidBalance || 0) - prepaidUsed, // Khấu trừ ví trên Firestore
                             tier: finalTierId,
                             lastVisitDate: now,
                             history: [...(selectedMember.value.history || []), {
                                 date: now,
                                 type: 'BILL',
-                                description: `Hóa đơn${invStr}: ${formatCurrency(billAmount.value)}đ${prepaidStr}${ptsStr}${earnStr}`,
+                                description: `Hóa đơn${invStr}: ${formatCurrency(billAmount.value)}đ${detailsStr}`,
                                 amount: ptsEarned - ptsUsed
                             }]
-                        }).catch( () => {}
-                        );
+                        }).catch( (e) => {
+                            console.error("Lỗi cập nhật hóa đơn:", e);
+                        });
 
                         notify(`+${ptsEarned.toLocaleString()}đ tích lũy! ${finalTierId !== currentTierId ? 'Đã thăng hạng!' : ''}`);
                         
-                        // Trả trạng thái ban đầu
+                        // Khôi phục trạng thái mặc định của form
                         billAmount.value = null;
                         usePoints.value = false;
                         usePrepaid.value = false;
@@ -1462,7 +1471,7 @@
                         invoiceNumber.value = '';
                     };
 
-                    // Hàm nạp / trừ ví trả trước thủ công dành cho Admin
+                    // [VUE METHOD MỚI]: Hàm điều chỉnh nạp / trừ ví trả trước thủ công dành cho Admin
                     const handleAdjustPrepaid = () => {
                         const val = parseInt(adjustPrepaidValue.value) || 0;
                         if (val === 0 && !adjustPrepaidReason.value)
@@ -1474,7 +1483,7 @@
                         const log = {
                             date: now,
                             type: 'PREPAID_ADJUST',
-                            description: adjustPrepaidReason.value || (val > 0 ? `Nạp tiền ví trả trước` : `Admin điều chỉnh trừ ví`),
+                            description: adjustPrepaidReason.value || (val > 0 ? `Admin nạp tiền ví trả trước` : `Admin điều chỉnh trừ ví`),
                             amount: val
                         };
 
@@ -1487,7 +1496,8 @@
                             adjustPrepaidValue.value = null;
                             adjustPrepaidReason.value = '';
                             notify("Cập nhật Ví trả trước thành công!");
-                        }).catch(() => {
+                        }).catch((e) => {
+                            console.error("Lỗi cập nhật ví trả trước:", e);
                             notify("Lỗi đồng bộ dữ liệu ví!", "error");
                         });
                     };
@@ -1743,13 +1753,13 @@
                         billAmount,
                         formattedBillAmount,
                         usePoints,
-                        usePrepaid,
-                        remainingAfterPrepaid,
-                        actualCollected,
+                        usePrepaid, // Trả về biến dùng ví trả trước
+                        remainingAfterPrepaid, // Trả về computed tính tiền bill còn lại
+                        actualCollected, // Trả về computed tính thực thu tại quầy
                         adjustPointsValue,
                         adjustPointsReason,
-                        adjustPrepaidValue,
-                        adjustPrepaidReason,
+                        adjustPrepaidValue, // Trả về biến nạp thêm ví trả trước
+                        adjustPrepaidReason, // Trả về biến ghi chú ví trả trước
                         newFeedbackContent,
                         sortedDetailHistory,
                         sortedFeedbacks,
@@ -1772,7 +1782,7 @@
                         getLogColor,
                         handleSubmitMember,
                         handleTransaction,
-                        handleAdjustPrepaid,
+                        handleAdjustPrepaid, // Trả về hàm điều chỉnh ví trả trước của Admin
                         handleAdjustPoints,
                         submitFeedback,
                         saveResolution,
